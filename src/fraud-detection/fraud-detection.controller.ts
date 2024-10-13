@@ -60,44 +60,66 @@ export class FraudDetectionController {
   private extractFeatures(transaction: Transaction): number[] {
     // Normalize and preprocess data to extract features for prediction
     const amount = transaction.amount; // Use original amount
-    const userAge = transaction.userAge;
+    const lastTransactionAmount = transaction.lastTransactionAmount;
+    const time = this.convertDateAndTimeToNumbers(transaction.time);
     const accountBalance = transaction.accountBalance;
     const transactionsInLast24h = transaction.transactionsInLast24h;
     const timeSinceLastTransaction = transaction.timeSinceLastTransaction;
     const transactionAmountDifference = transaction.transactionAmountDifference;
+    const transactionType = this.hashString(transaction.transactionType);
+    const lastTransactionLocation = this.hashString(
+      transaction.lastTransactionLocation,
+    );
 
     // One-hot encoding for location and device type
-    const location = transaction.location === 'New York' ? 1 : 0; // Adjust as needed
-    const deviceType = transaction.currentDevice === 'mobile' ? 1 : 0; // Adjust as needed
-    const lastDeviceType = transaction.lastDevice === 'mobile' ? 1 : 0; // Adjust as needed
+    const location = this.hashString(transaction.location);
+    const deviceType = transaction.currentDevice === 'mobile' ? 1 : 0;
+    const lastDeviceType = transaction.lastDevice === 'mobile' ? 1 : 0;
 
     // Convert device IDs to numeric representations (you can use hashing for larger datasets)
-    const currentDeviceId = this.hashDeviceId(transaction.currentDeviceId);
-    const lastDeviceId = this.hashDeviceId(transaction.lastDeviceId);
+    const currentDeviceId = this.hashString(transaction.currentDeviceId);
+    const lastDeviceId = this.hashString(transaction.lastDeviceId);
 
     // Return the feature array (ensure it matches the model input shape)
     return [
       amount,
-      userAge,
+      transactionType,
+      parseInt(time),
+      location,
+      currentDeviceId,
+      lastDeviceId,
+      lastTransactionLocation,
+      lastTransactionAmount,
       accountBalance,
       transactionsInLast24h,
       timeSinceLastTransaction,
       transactionAmountDifference,
-      location,
       deviceType,
-      currentDeviceId,
       lastDeviceType,
-      lastDeviceId,
     ];
   }
 
   // Simple hashing function for device ID (you can improve this based on your needs)
-  private hashDeviceId(deviceId: string): number {
+  private hashString(deviceId: string): number {
     let hash = 0;
     for (let i = 0; i < deviceId.length; i++) {
       hash = (hash << 5) - hash + deviceId.charCodeAt(i);
       hash |= 0; // Convert to 32bit integer
     }
     return hash;
+  }
+
+  private convertDateAndTimeToNumbers(dateTimeString: string) {
+    const dateTime = new Date(dateTimeString);
+
+    const year = dateTime.getFullYear();
+    const month = dateTime.getMonth() + 1;
+    const day = dateTime.getDate();
+    const hours = dateTime.getHours();
+    const minutes = dateTime.getMinutes();
+    const seconds = dateTime.getSeconds();
+
+    const numberString = `${year}${month}${day}${hours}${minutes}${seconds}`;
+    return numberString;
   }
 }
