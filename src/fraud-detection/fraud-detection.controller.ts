@@ -27,11 +27,11 @@ interface Transaction {
   transactionAmountDifference: number; // Difference in transaction amount
 }
 
-@Controller('fraud-detection')
+@Controller('api/v1')
 export class FraudDetectionController {
   constructor(private readonly fraudDetectionService: FraudDetectionService) {}
 
-  @Post('process-transaction')
+  @Post('fraud-detection')
   async processTransaction(@Body() transaction: Transaction) {
     try {
       // Feature extraction from transaction data
