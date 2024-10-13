@@ -12,11 +12,5 @@
       "dest": "src/main.ts",
       "methods": ["POST"]
     }
-  ],
-  "functions": {
-    "api/*.js": {
-      "memory": 3009,
-      "maxDuration": 30
-    }
-  }
+  ]
 }
